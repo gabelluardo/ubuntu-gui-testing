@@ -2,6 +2,7 @@
 Documentation       Shared resources for installer testing
 
 Resource            kvm.resource
+# FIXME: https://askubuntu.com/questions/1474941/want-to-learn-more-about-find-files-on-desktop
 
 
 *** Variables ***
