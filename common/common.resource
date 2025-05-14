@@ -63,6 +63,7 @@ Run Command In Terminal
     BuiltIn.Sleep    2    # hacky
     ${enter}    Create List    Return
     PlatformHid.Keys Combo    ${enter}
+    BuiltIn.Sleep    2    # hacky
     PlatformVideoInput.Match Text    FINISHED-HIT    120
 
 Close Terminal
@@ -70,7 +71,7 @@ Close Terminal
     FOR    ${index}    IN RANGE    30
         ${terminal_finns}    Run Keyword And Return Status    PlatformVideoInput.Match Text    ubuntu@ubuntu    15
         IF    ${terminal_finns} == ${True}
-            Keys Combo    ${combo}
+            PlatformHid.Keys Combo    ${combo}
             BuiltIn.Sleep    1
         ELSE
             BREAK
@@ -80,7 +81,10 @@ Close Terminal
 Install Debian Package
     [Arguments]    ${package}
     Open Terminal
-    Run Sudo Command In Terminal    sudo apt-get install -y ${package}
+    Run Sudo Command In Terminal    sudo apt-get update -y
+    Run Command In Terminal    sudo apt-get upgrade -y
+    Run Command In Terminal    sudo apt-get install -y ${package}
+    # Run Sudo Command In Terminal    sudo apt-get install -y ${package}
     Close Terminal
 
 Install Snap Package
