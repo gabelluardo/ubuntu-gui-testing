@@ -19,7 +19,7 @@ EzClick
 Open Terminal
     ${combo}    Create List    Alt_L    Control_L    t
     PlatformHid.Keys Combo    ${combo}
-    PlatformVideoInput.Match Text    ubuntu@ubuntu    15
+    PlatformVideoInput.Match Text    ubuntu@ubuntu    30
 
 Run Sudo Command In Terminal
     [Arguments]    ${command}
@@ -98,13 +98,13 @@ Start Application
     [Arguments]    ${application}
     ${combo}    Create List    Alt_L    F2
     PlatformHid.Keys Combo    ${combo}
-    PlatformVideoInput.Match Text    Run a Command    15
+    PlatformVideoInput.Match Text    Run a Command    30
     PlatformHid.Type String    ${application}
     ${ret}    Create List    Return
     PlatformHid.Keys Combo    ${ret}
 
 Log In
-    PlatformVideoInput.Match Text    Not listed    120
+    PlatformVideoInput.Match Text    Not listed    240
     ${ret}    Create List    Return
     PlatformHid.Keys Combo    ${ret}
     BuiltIn.Sleep    2

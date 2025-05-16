@@ -36,7 +36,7 @@ Clone Simple Repo
     ${ret}=    Create List    Return
     PlatformHid.Keys Combo    ${ret}
     BuiltIn.Sleep    2
-    PlatformVideoInput.Match Text    FINISHED HIT
+    PlatformVideoInput.Match Text    FINISHED HIT    30
     Close Terminal
 
 Install OpenJdk
@@ -64,7 +64,7 @@ Run The Test
     ${ret}=    Create List    Return
     PlatformHid.Keys Combo    ${ret}
     BuiltIn.Sleep    2
-    PlatformVideoInput.Match Text    FINISHED HIT
+    PlatformVideoInput.Match Text    FINISHED HIT    30
     PlatformHid.Type String    clear
     PlatformHid.Keys Combo    ${space}
     PlatformHid.Keys Combo    ${ampersand}
@@ -72,7 +72,7 @@ Run The Test
     PlatformHid.Keys Combo    ${space}
     PlatformHid.Type String    java SimpleAWTApp
     PlatformHid.Keys Combo    ${ret}
-    PlatformVideoInput.Match Text    Simple AWT Application
+    PlatformVideoInput.Match Text    Simple AWT Application    30
     Move Pointer To /home/andersson123/canonical/code/canonical/ubuntu-gui-testing/tests/java-tck/generic/button.png
     Click LEFT Button
     PlatformVideoInput.Match
