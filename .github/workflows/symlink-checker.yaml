@@ -23,8 +23,7 @@ jobs:
               echo "No resource file under $dr!"
               code=1
             fi
-            subdirs=$(ls -d -- */ | grep -v common | grep -v generic | \
-                      grep -v plans)
+            subdirs=$(ls -d -- */ | grep -v -e common -e generic -e plans)
             for subdr in $subdirs; do
               ls $subdr/*.robot
               if [[ $? != "0" ]]; then
