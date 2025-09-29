@@ -57,7 +57,7 @@ Allow Firefox Download Prompt
 
 Verify Download
     [Documentation]    Verify successful download of a file in Firefox
-    Click LEFT Button On ${Y}/generic/downloads.png
+    Click LEFT Button On ${Y}/generic/home/downloads.png
     Match Text    Completed 60
 
 Focus Prompt
@@ -118,3 +118,53 @@ Answer Both yq Prompts
     Keys Combo    Return
     Match Text    a: 1
     Ensure No Prompts
+
+# imported from prompting-client
+
+User Log In
+    [Documentation]    Log in a given user with password
+    [Arguments]    ${username}    ${password}
+    Match Text    ${username}    30
+    Keys Combo    Return
+    Match Text    Password    30
+    Type String    ${password}
+    BuiltIn.Sleep    0.5
+    Keys Combo    Return
+    BuiltIn.Sleep    5
+
+Clear Terminal
+    [Documentation]    Clear terminal from previous commands
+    Type String    clear
+    Keys Combo    Return
+    Match Text    ${PROMPT}    30
+
+Delete Request Rules
+    [Documentation]    Delete current request rules for prompting
+    Open Terminal
+    Run Sudo Command In Terminal
+    ...    echo '{"action": "remove", "selector": {"interface": "camera"}}' | sudo snap debug api -X POST -H 'Content-Type: application/json' "/v2/interfaces/requests/rules?user-id=$UID"
+    Match Text    ${PROMPT}    30
+    Close Terminal
+
+Run Simple Command
+    [Documentation]    Run command in terminal without verifying the exit status
+    [Arguments]    ${cmd}
+    Type String    ${cmd}
+    Keys Combo    Return
+
+Press Button
+    [Documentation]    Press action button on the prompt
+    [Arguments]    ${text}
+    Click LEFT Button On ${text}
+
+Cheese Prompt Is Present
+    [Documentation]    Find camera prompt for "cheese"
+    Match Text    Allow cheese to access your camera?    30
+
+Cheese No Device
+    [Documentation]    Find "cheese" application open with no device message
+    Match    ${Y}/generic/camera/cheese_no_device.png    30
+
+Cheese With Video
+    [Documentation]    Find "cheese" application open with fake test video
+    Match    ${Y}/generic/camera/cheese_with_video.png    30
