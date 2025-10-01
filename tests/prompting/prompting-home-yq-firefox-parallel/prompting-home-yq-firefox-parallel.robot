@@ -21,9 +21,7 @@ Install yq
 
 Enable Prompting
     [Documentation]    Enable prompting
-    Open Security Center
     Enable Prompting
-    Close Current Window
 
 Trigger Firefox Download Prompt
     [Documentation]    Trigger prompt when downloading example.com as html

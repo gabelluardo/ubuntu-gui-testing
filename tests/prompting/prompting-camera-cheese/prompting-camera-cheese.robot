@@ -1,9 +1,9 @@
 *** Settings ***
-Documentation   Basic tests for the prompting-client snap
+Documentation       Basic tests for the prompting-client snap
 
-Resource        ${Z}/../prompting-client.resource
+Resource            ${Z}/../prompting.resource
 
-Test Tags       robot:exit-on-failure    # robocop: off=tag-with-reserved-word
+Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
 
 *** Variables ***
@@ -12,55 +12,48 @@ ${Z}    ${CURDIR}
 
 *** Test Cases ***
 Setup
-    [Documentation]         Use rapidocr rather than tesseract-ocr in yarf
+    [Documentation]    Use rapidocr rather than tesseract-ocr in yarf
     Set Ocr Method    rapidocr
 
-System Log In
-    [Documentation]         Log in to desktop environment
-    User Log In    u    u
+Log In
+    [Documentation]    Log in to desktop environment
+    Log In
 
 Prepare Test Enviroment
-    [Documentation]         Prepare test enviroment
+    [Documentation]    Prepare test enviroment
     Install Snap Package    cheese
     Install Debian Package    gstreamer1.0-tools
-    Delete Request Rules
     Open Terminal
-    Run Sudo Command In Terminal    sudo modprobe v4l2loopback devices=1 video_nr=0 exclusive_caps=1 && sudo snap set system experimental.apparmor-prompting=true
+    Run Sudo Command In Terminal    sudo modprobe v4l2loopback devices=1 video_nr=0 exclusive_caps=1
     Run Simple Command    gst-launch-1.0 videotestsrc ! videoconvert ! v4l2sink device=/dev/video0
     BuiltIn.Sleep    2
 
+Enable Prompting
+    [Documentation]    Enable prompting
+    Enable Prompting
+
 Deny Once
-    [Documentation]         Deny access to camera interface
+    [Documentation]    Deny access to camera interface
     Start Application    cheese
-    Cheese Prompt Is Present
-    Press Button    Deny once
     # The first attempt will spawn 3 prompts
-    Cheese Prompt Is Present
-    Press Button    Deny once
-    Cheese Prompt Is Present
-    Press Button    Deny once
+    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
+    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
+    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
     Cheese No Device
-    Close Application
+    Close Current Window
     BuiltIn.Sleep    2
 
 Allow Until Logout
-    [Documentation]         Allow access to camera interface until logout
+    [Documentation]    Allow access to camera interface until logout
     Start Application    cheese
-    Cheese Prompt Is Present
-    Press Button    Allow until logout
+    Reply To Simple Prompt    Allow cheese to access your camera?    Allow until logout
     Cheese With Video
-    Close Application
+    Close Current Window
     BuiltIn.Sleep    2
 
 No Prompt
-    [Documentation]         Verify no prompt is shown due the "Allow Until Logout"
+    [Documentation]    Verify no prompt is shown due the "Allow Until Logout"
     Start Application    cheese
     Cheese With Video
-    Close Application
+    Close Current Window
     BuiltIn.Sleep    2
-
-Cleanup Test Enviroment
-    [Documentation]         Clean up system state
-    ${combo}    Create List    Control_L    c
-    Keys Combo    ${combo}
-    Close Terminal

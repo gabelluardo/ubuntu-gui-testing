@@ -17,9 +17,7 @@ Log In
 
 Enable Prompting
     [Documentation]    Enable prompting
-    Open Security Center
     Enable Prompting
-    Close Current Window
 
 Download Example File
     [Documentation]    Download example.com as html
