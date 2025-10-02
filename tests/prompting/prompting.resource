@@ -31,28 +31,23 @@ Open Firefox
     Start Application    firefox
     Match Text    Firefox    60
 
-Open Example Domain
-    [Documentation]    Open a new tab in Firefox and navigate to example.com
+Open Firefox Tab
+    [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
+    [Arguments]    ${url}    ${title}
     Keys Combo    Ctrl    t
-    Type String    example.com
+    Type String    ${url}
     Keys Combo    Return
-    Match Text    Example Domain 60
+    Match Text    ${title}    60
 
 Save File
-    [Documentation]    Download current website in Firefox
+    [Documentation]    Common 'Save File' action
     Keys Combo    Ctrl    s
     Match Text    Save
     BuiltIn.Sleep    1
     Keys Combo    Return
     BuiltIn.Sleep    1
 
-Allow Firefox Download Prompt
-    [Documentation]    Give Firefox write access when downloading a file
-    Match Text    Firefox wants to get write access
-    Click LEFT Button On Allow always
-    BuiltIn.Sleep    1
-
-Verify Download
+Verify Firefox Download
     [Documentation]    Verify successful download of a file in Firefox
     Click LEFT Button On ${Y}/generic/home/downloads.png
     Match Text    Completed 60

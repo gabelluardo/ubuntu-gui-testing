@@ -22,7 +22,7 @@ Enable Prompting
 Download Example File
     [Documentation]    Download example.com as html
     Open Firefox
-    Open Example Domain
+    Open Firefox Tab    example.com    Example Domain
     Save File
-    Allow Firefox Download Prompt
-    Verify Download
+    Reply To Simple Prompt    Firefox wants to get write access    Allow always
+    Verify Firefox Download

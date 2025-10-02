@@ -26,7 +26,7 @@ Enable Prompting
 Trigger Firefox Download Prompt
     [Documentation]    Trigger prompt when downloading example.com as html
     Open Firefox
-    Open Example Domain
+    Open Firefox Tab    example.com    Example Domain
     Save File
 
 Trigger yq Prompt
@@ -36,5 +36,5 @@ Trigger yq Prompt
 
 Allow Firefox Download Prompt
     [Documentation]    Return to Firefox and handle its active prompt
-    Allow Firefox Download Prompt
-    Verify Download
+    Reply To Simple Prompt    Firefox wants to get write access    Allow always
+    Verify Firefox Download
