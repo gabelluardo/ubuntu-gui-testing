@@ -39,6 +39,13 @@ Open Thunderbird
     Reply To Simple Prompt    thunderbird wants to get write access    ${reply}
     Match Text    Account Setup
 
+Open Gimp
+    [Documentation]    Open gimp
+    Start Application    gimp
+    Match Text    Welcome to GIMP    60
+    Close Current Window    # Close the welcome window
+    Match Text    GNU Image Manipulation Program
+
 Open Firefox Tab
     [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
     [Arguments]    ${url}    ${title}
