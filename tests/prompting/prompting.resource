@@ -31,6 +31,14 @@ Open Firefox
     Start Application    firefox
     Match Text    Firefox    60
 
+Open Thunderbird
+    [Documentation]    Open Thunderbird and reply to startup prompts
+    [Arguments]    ${reply}
+    Start Application    thunderbird
+    Match Text    Downloads/thunderbird.tmp
+    Reply To Simple Prompt    thunderbird wants to get write access    ${reply}
+    Match Text    Account Setup
+
 Open Firefox Tab
     [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
     [Arguments]    ${url}    ${title}
