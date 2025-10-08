@@ -1,3 +1,4 @@
 ---
-robot_files:
-    - "tests/gnome-shell/gnome-shell-basic/gnome-shell-basic.robot"
+tests:
+  - Gnome-Shell-Basic:
+    entrypoint: "tests/gnome-shell"

@@ -1,4 +1,10 @@
 ---
-robot_files:
-  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-dbx.robot"
-  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-ca.robot"
+tests:
+  - Firmware-Updater-Dbx:
+    entrypoint: "tests/firmware-updater/"
+    requirements:
+      tpm: true
+  - Firmware-Updater-Ca:
+    entrypoint: "tests/firmware-updater/"
+    requirements:
+      tpm: true
