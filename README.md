@@ -118,22 +118,85 @@ Here's an example of what a `$plan.yaml` should look like (you can also see exam
 
 ```
 ---
-robot_files:
-    - "tests/application-1/application-1-basic/application-1-basic.robot"
+tests:
+  - Application-1-Basic:
+    entrypoint: tests/application-1/
 ```
 
 In this example, we define one test plan. In the context of testing desktop images for Ubuntu releases, you could perhaps have test plans like `daily`, `beta`, `release-candidate`, corresponding to `daily.yaml`, `beta.yaml`, and `release-candidate.yaml`, respectively.
 
-Under each plan, the `robot_files` key exists. `robot_files` is a list of file paths (from the root of the repo) that point to `.robot` script files. The idea is that, for a specific test plan, you'd want to run a list of separate test suites. This `yaml` file is consumed by [GUTS](https://github.com/canonical/gui-ubuntu-testing-system), in order to run several test suites in parallel.
+Here, the `$plan` contains one test case; `Application-1-Basic`. Each plan may have several individual test cases. The idea is that, for a specific test plan, you'd want to run a list of separate test suites.
 
-You do not have to have more than one plan, in fact, a directory under `tests/` doesn't *need* to include any `plans/*.yaml` files at all. If the tests don't need to be run in GUTS, you can simply use `ubuntu-gui-testing` to store your tests, and run them in whatever way you choose.
+The `$plan` test case name must be what robot framework parses a `.robot` file as;
 
-An important feature of the `$plan.yaml` schema described above, is that tests from one application can include tests from another in their `$plan.yaml`. For example, if `application-1` depends on `application-2`, there may exist a `application-1-application-2-dependency.yaml` plan, with the following contents:
+It's the name of the individual test, i.e., a `.robot` file. One important thing to note is that Robot Framework converts the name, for example `firefox-example-basic.robot` becomes `Firefox-Example-Basic`. The words are entitled and the `.robot` suffix is omitted.
+
+Thus, `- Application-1-Basic` is the name of this individual test. The `entrypoint` tag is a path from which everything in the test case is importable for Robot Framework. What does this mean? Take `tests/firefox-example` as an example:
+
+```
+$ cd tests/firefox-example && tree
+
+├── common -> ../../common/
+├── firefox-example-basic
+│   └── firefox-example-basic.robot  # imports ../firefox-example.resource
+├── firefox-example-new-tab
+│   ├── firefox-example-new-tab.robot  # imports ../firefox-example.resource
+│   └── new-tab.png
+├── firefox-example.resource  # imports common/common.resource
+├── generic
+│   ├── firefox.png
+│   └── new-tab.png
+└── plans
+    ├── extended.yaml
+    └── regular.yaml
+```
+
+All the test files here (`firefox-example-basic.robot`, and `firefox-example-new-tab.robot`) reference files in directories above them - e.g. images under `generic/`, and common resources under `common/`. Because of this, pointing yarf directly to `tests/firefox-example/firefox-example-basic` will fail, as Robot Framework does not parse utilities above the specified directory.
+
+When calling `firefox-example-basic.robot`, you would run `yarf` like so:
+
+```
+VNC_ADDRESS=127.0.0.1 VNC_PORT=0 yarf --platform=Vnc ../ubuntu-gui-testing/tests/firefox-example/ -- --suite "Firefox-Example-New-Tab"
+```
+
+Here, `yarf` parses the whole `tests/firefox-example` directory. We then specify which robot file to run with the `--suite` arg. This arg is native to Robot Framework, not part of `yarf` specifically. All args after the `--` separator are passed directly to the underlying Robot Framework invocation within `yarf`. There are other args you may want to familiarise yourself with.
+
+So, if you had, for instance:
+
+```
+
+$ cd tests/firefox-theoretical-example && tree
+
+├── firefox-example-basic
+│   └── templates
+    │   └── template-1.png
+│   └── firefox-example-basic.robot 
+│   └── firefox-example-basic.resource
+├── firefox-example-extended
+│   └── templates
+    │   └── template-1.png
+│   └── firefox-example-extended.robot 
+│   └── firefox-example-extended.resource
+└── plans
+    ├── extended.yaml
+    └── regular.yaml
+
+```
+
+Then, the `entrypoint` in `extended.yaml` or `regular.yaml` could be `tests/firefox-theoretical-example/firefox-example-basic`, as in this instance, `firefox-example-basic.robot` does *NOT* import anything any directories above itself, and the common directory is omitted. You may structure your application directory however you please, within the realms of common sense!
+
+There is also an optional section per test case, `requirements`. Usage of that is exemplified below:
 
 ```
 ---
-robot_files:
-    - "tests/application-1/application-1-basic/application-1-basic.robot"
-    - "tests/application-2/application-2-basic/application-2-basic.robot"
+tests:
+  - Tpm-Fde-With-Passphrase:
+    entrypoint: tests/desktop-installer/
+    requirements:
+      tpm: true
 ```
+
+This is an example of a desktop installer test case that utilises TPM FDE capabilities. This `requirements` field signifies to `GUTS` exactly how to spawn the testbed.
+
+`tpm` obviously defaults to `false`. The set of requirements options will be documented later on, when `GUTS` is more mature.
 
