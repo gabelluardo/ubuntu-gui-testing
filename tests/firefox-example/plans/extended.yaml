@@ -1,4 +1,6 @@
 ---
-robot_files:
-    - "tests/firefox-example/firefox-example-basic/firefox-example-basic.robot"
-    - "tests/firefox-example/firefox-example-new-tab/firefox-example-new-tab.robot"
+tests:
+  - Firefox-Example-Basic:
+    entrypoint: tests/firefox-example
+  - Firefox-Example-New-Tab:
+    entrypoint: tests/firefox-example

@@ -1,7 +1,22 @@
 ---
-robot_files:
-  - "tests/desktop-security-center/desktop-security-center-tpm-fde/desktop-security-center.robot"
-  - "tests/desktop-security-center/desktop-security-center-tpm-fde-change-passphrase/desktop-security-center-tpm-fde-change-passphrase.robot"
-  - "tests/desktop-security-center/desktop-security-center-check-key-success/desktop-security-center.robot"
-  - "tests/desktop-security-center/desktop-security-center-check-key-failure/desktop-security-center.robot"
-  - "tests/desktop-security-center/desktop-security-center-replace-recovery-key/desktop-security-center.robot"
+tests:
+  - Desktop-Security-Center:
+    entrypoint: "tests/desktop-security-center/"
+    requirements:
+      tpm: true
+  - Desktop-Security-Center-Tpm-Fde-Change-Passphrase:
+    entrypoint: "tests/desktop-security-center/"
+    requirements:
+      tpm: true
+  - Desktop-Security-Center-Check-Key-Success:
+    entrypoint: "tests/desktop-security-center/"
+    requirements:
+      tpm: true
+  - Desktop-Security-Center-Check-Key-Failure:
+    entrypoint: "tests/desktop-security-center/"
+    requirements:
+      tpm: true
+  - Desktop-Security-Center-Replace-Recovery-Key:
+    entrypoint: "tests/desktop-security-center/"
+    requirements:
+      tpm: true

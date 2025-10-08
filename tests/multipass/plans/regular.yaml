@@ -1,3 +1,4 @@
 ---
-robot_files:
-    - "tests/multipass/multipass-basic/multipass-basic.robot"
+tests:
+  - Multipass-Basic:
+    entrypoint: "tests/multipass/"
