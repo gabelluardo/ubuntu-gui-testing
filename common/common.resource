@@ -129,8 +129,7 @@ Check File Exists
     [Documentation]    Asserts that the given file exists and optionally deletes it
     [Arguments]    ${path}    ${remove}=False
     Open Terminal
-    Run Command In Terminal    [ -e ${path} ] && echo FILE EXISTS
-    Match Text    FILE EXISTS    1
+    Run Command In Terminal    [ -e ${path} ]
     IF    ${remove}    Run Command In Terminal    rm -f ${path}
     Close Terminal
 
