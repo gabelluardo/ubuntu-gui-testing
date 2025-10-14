@@ -1,0 +1,4 @@
+---
+tests:
+  - Prompting-Home-Ollama:
+    entrypoint: "tests/prompting/"
