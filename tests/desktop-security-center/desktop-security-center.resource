@@ -19,22 +19,10 @@ Open Security Center
     Type String    desktop-security-center
     Keys Combo    Return
 
-Open Cheese
-    [Documentation]    Opens the Cheese app
-    Open Terminal
-    Type String    cheese
-    Keys Combo    Return
-
 Click Security Center Icon
     [Documentation]    Opens the Security Center via clicking its icon
     Move Pointer To ${Y}/generic/security-center-icon.png
     EzClick
-
-Open Security Center With Camera Interface
-    [Documentation]    Opens the Security Center with the Camera interface enabled
-    Open Terminal
-    Type String    desktop-security-center --enable-camera-interface
-    Keys Combo    Return
 
 Open Disk Encryption Tab
     [Documentation]    Opens the Disk Encryption Tab in the Security Center
