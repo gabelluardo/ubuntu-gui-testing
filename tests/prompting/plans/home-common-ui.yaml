@@ -1,3 +1,6 @@
 ---
-robot_files:
-  - "tests/prompting/prompting-home-gimp/prompting-home-gimp.robot"
+tests:
+  - Prompting-Home-Gimp:
+    entrypoint: tests/prompting/
+    requirements:
+      tpm: true
