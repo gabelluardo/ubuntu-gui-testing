@@ -190,7 +190,7 @@ There is also an optional section per test case, `requirements`. Usage of that i
 ```
 ---
 tests:
-  - Tpm-Fde-With-Passphrase:
+  Tpm-Fde-With-Passphrase:
     entrypoint: tests/desktop-installer/
     requirements:
       tpm: true
