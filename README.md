@@ -119,7 +119,7 @@ Here's an example of what a `$plan.yaml` should look like (you can also see exam
 ```
 ---
 tests:
-  - Application-1-Basic:
+  Application-1-Basic:
     entrypoint: tests/application-1/
 ```
 
