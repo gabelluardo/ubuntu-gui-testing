@@ -20,6 +20,16 @@ Enable Prompting
     Match    ${Y}/generic/prompting-toggle-enabled.png    60
     Close Current Window
 
+Get System Version
+    [Documentation]    Get ubuntu version number
+    Open Terminal
+    Run Command In Terminal    grep VERSION_ID /etc/os-release | cut -d'"' -f2
+    ${text}=    Read Text
+    ${matches}=    Get Regexp Matches    ${text}    [0-9]{2}\\.[0-9]{2}
+    ${release}=    Get From List    ${matches}    0
+    Close Current Window
+    RETURN    ${release}
+
 Handle PolKit Prompt
     [Documentation]    Handle a PolKit prompt
     Match Text    Authentication Required
