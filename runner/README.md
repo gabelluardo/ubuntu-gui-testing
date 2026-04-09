@@ -27,7 +27,7 @@ Run via console script:
 ```bash
 uv run ubuntu-gui-testing-runner \
   --iso /path/to/ubuntu.iso \
-  --test-suite tests/desktop-installer/
+  --test-suite tests/desktop-installer/ \
   --suite resolute.entire-disk
 ```
 
