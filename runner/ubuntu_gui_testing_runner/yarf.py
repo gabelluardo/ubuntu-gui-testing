@@ -31,25 +31,10 @@ def construct_yarf_command(
     return command
 
 
-def run_test_via_yarf(yarf_command: list[str], vnc_port: int) -> int:
-    """Run YARF test suite against the spawned VM."""
-    mod_env = os.environ.copy()
-    mod_env["VNC_PORT"] = str(vnc_port - 5900)
-
-    # Safe invocation: command is built internally from known flags and values.
-    yarf_process = subprocess.Popen(yarf_command, env=mod_env)  # noqa: S603
-    while yarf_process.poll() is None:
-        LOGGER.info("YARF process still running")
-        sleep(10)
-
-    LOGGER.info("YARF exited with code %s", yarf_process.returncode)
-    return yarf_process.returncode or 0
-
-
-def run_test_via_yarf_with_process(
+def _run_yarf_process(
     yarf_command: list[str], vnc_port: int
 ) -> tuple[subprocess.Popen[bytes], int]:
-    """Run YARF test suite and return both process and exit code."""
+    """Start YARF and poll until it exits; return the process and exit code."""
     mod_env = os.environ.copy()
     mod_env["VNC_PORT"] = str(vnc_port - 5900)
 
@@ -61,6 +46,19 @@ def run_test_via_yarf_with_process(
 
     LOGGER.info("YARF exited with code %s", yarf_process.returncode)
     return yarf_process, yarf_process.returncode or 0
+
+
+def run_test_via_yarf(yarf_command: list[str], vnc_port: int) -> int:
+    """Run YARF test suite against the spawned VM."""
+    _, exit_code = _run_yarf_process(yarf_command, vnc_port)
+    return exit_code
+
+
+def run_test_via_yarf_with_process(
+    yarf_command: list[str], vnc_port: int
+) -> tuple[subprocess.Popen[bytes], int]:
+    """Run YARF test suite and return both process and exit code."""
+    return _run_yarf_process(yarf_command, vnc_port)
 
 
 def archive_artifacts(

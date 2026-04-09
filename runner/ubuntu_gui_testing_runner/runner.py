@@ -101,7 +101,9 @@ class QemuYarfRunner:
             self.qemu_executable_name
         )
         self.qemu_img_path: str = self._require_executable("qemu-img")
-        self.swtpm_path: str = self._require_executable("swtpm")
+        self.swtpm_path: str | None = (
+            self._require_executable("swtpm") if self.args.tpm else None
+        )
         self.yarf_path: str = self._require_executable("yarf")
 
         self.qemu_command = [
@@ -184,6 +186,8 @@ class QemuYarfRunner:
     def run(self) -> int:
         """Run the full lifecycle: start VM, execute tests, and return exit code."""
         if self.args.tpm:
+            if self.swtpm_path is None:
+                raise RunnerError("swtpm executable is required when --tpm is enabled")
             self.swtpm_process = start_swtpm(
                 self.tpm_dir, self.tpm_socket, self.swtpm_path
             )

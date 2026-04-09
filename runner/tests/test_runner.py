@@ -201,9 +201,9 @@ def test_exit_cleans_processes_and_temp_paths(
 
     instance.__exit__(None, None, None)
 
-    yarf_proc.kill.assert_called_once()
-    vm_proc.kill.assert_called_once()
-    swtpm_proc.kill.assert_called_once()
+    yarf_proc.terminate.assert_called_once()
+    vm_proc.terminate.assert_called_once()
+    swtpm_proc.terminate.assert_called_once()
     assert not storage.exists()
     cleanup_mock.assert_called_once()
     prefix_cleanup.assert_called_once()
