@@ -15,6 +15,8 @@ dependencies = [
 [dependency-groups]
 dev = [
   "mypy>=1.11.0",
+  "pytest>=8.3.0",
+  "pytest-mock>=3.14.0",
   "ruff>=0.9.0",
   "types-paramiko>=3.5.0.20240928",
 ]
@@ -29,6 +31,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101", "S105", "S106", "S108"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
@@ -36,3 +41,7 @@ warn_unreachable = true
 warn_unused_configs = true
 namespace_packages = true
 explicit_package_bases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
