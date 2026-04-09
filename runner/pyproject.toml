@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ubuntu-gui-testing-runner"
+version = "0.1.0"
+description = "QEMU + YARF runner utilities for ubuntu-gui-testing"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "paramiko>=3.5.0",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.11.0",
+  "ruff>=0.9.0",
+  "types-paramiko>=3.5.0.20240928",
+]
+
+[project.scripts]
+ubuntu-gui-testing-runner = "ubuntu_gui_testing_runner.__main__:main"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+warn_unused_configs = true
+namespace_packages = true
+explicit_package_bases = true
