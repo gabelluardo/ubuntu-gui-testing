@@ -142,7 +142,12 @@ class QemuYarfRunner:
 
         for proc in [self.yarf_process, self.vm_process, self.swtpm_process]:
             if proc and proc.poll() is None:
-                proc.kill()
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
 
         if self.archive_dir:
             archive_artifacts(
