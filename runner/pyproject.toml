@@ -1,7 +1,3 @@
-[build-system]
-requires = ["hatchling>=1.25.0"]
-build-backend = "hatchling.build"
-
 [project]
 name = "ubuntu-gui-testing-runner"
 version = "0.1.0"
