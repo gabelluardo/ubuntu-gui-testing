@@ -33,7 +33,7 @@ Print Status
     [Documentation]    Print TPM/FDE status
     Open Terminal
     Run Command In Terminal    snap-tpmctl status
-    Match Text    INDETERMINATE
+    Match Text    ACTIVE
 
 List All Recovery Keys
     [Documentation]    List all recovery keys
@@ -45,13 +45,13 @@ Check Recovery Key
     [Documentation]    Check existing recovery key
     Run Command With Prompt    sudo snap-tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${RECOVERY_KEY}
-    Match Text    recovery key works
+    Match Text    Recovery key works
 
 Check Recovery Key With Fail
     [Documentation]    Check existing recovery key
     Run Command With Prompt    sudo snap-tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${FAKE_RECOVERY_KEY}
-    Match Text    recovery key doesn't work
+    Match Text    Recovery key does not work
 
 Create A New Recovery Key
     [Documentation]    Create a new recovery key
