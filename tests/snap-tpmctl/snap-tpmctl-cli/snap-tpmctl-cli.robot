@@ -28,13 +28,6 @@ Log In
 Install snap-tpmctl
     [Documentation]    Install the snap-tpmctl snap
     Install Snap Package    snap-tpmctl
-    Open Terminal
-    Run Sudo Command In Terminal    sudo snap connect snap-tpmctl:snapd-control
-    Run Command In Terminal    sudo snap connect snap-tpmctl:hardware-observe
-    Run Command In Terminal    sudo snap connect snap-tpmctl:mountctl
-    Run Command In Terminal    sudo snap connect snap-tpmctl:mount-observe
-    Run Command In Terminal    sudo snap connect snap-tpmctl:block-devices
-    Run Command In Terminal    sudo snap connect snap-tpmctl:dm-crypt
 
 Print Status
     [Documentation]    Print TPM/FDE status
