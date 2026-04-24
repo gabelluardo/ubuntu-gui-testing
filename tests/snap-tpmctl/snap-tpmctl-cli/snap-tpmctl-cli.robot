@@ -8,10 +8,10 @@ Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-wo
 
 
 *** Variables ***
-${Z}    ${CURDIR}
+${Z}                    ${CURDIR}
 
-${NEW_PASSPHRASE}    ubuntu2.
-${PIN}    123451234512345
+${NEW_PASSPHRASE}       ubuntu2.
+${PIN}                  123451234512345
 ${RECOVERY_KEY_NAME}    test-recovery-key
 ${FAKE_RECOVERY_KEY}    11111-22222-33333-44444-55555-12345-23451-34512
 
@@ -37,7 +37,7 @@ Print Status
 
 List All Recovery Keys
     [Documentation]    List all recovery keys
-    Run Command In Terminal    snap-tpmctl list-all
+    Run Sudo Command In Terminal    sudo snap-tpmctl list-all
     Match Text    default-recovery
     Match Text    passphrase
 
@@ -55,7 +55,7 @@ Check Recovery Key With Fail
 
 Create A New Recovery Key
     [Documentation]    Create a new recovery key
-    Run Command In Terminal    sudo snap-tpmctl create-recovery-key ${RECOVERY_KEY_NAME}
+    Run Simple Command    sudo snap-tpmctl create-recovery-key ${RECOVERY_KEY_NAME}
     Match Text    Recovery Key:
     Keys Combo    Return
     Run Command In Terminal    snap-tpmctl list-recovery-keys
@@ -64,7 +64,7 @@ Create A New Recovery Key
 
 Regenerate An Existing Recovery Key
     [Documentation]    Regenerate a recovery key
-    Run Command In Terminal    sudo snap-tpmctl regenerate-recovery-key ${RECOVERY_KEY_NAME}
+    Run Simple Command    sudo snap-tpmctl regenerate-recovery-key ${RECOVERY_KEY_NAME}
     Match Text    Recovery Key:
     Keys Combo    Return
 
