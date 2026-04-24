@@ -164,10 +164,10 @@ Answer Prompt
 
 System Reboot
     [Documentation]    Reboot the system and log in again
-    [Arguments]    ${with_prompt}=${False}    ${prompt}=""    ${input}=""
+    [Arguments]    ${prompt}=""    ${input}=""
     Run Simple Command    reboot
     BuiltIn.Sleep    60
-    IF    ${with_prompt}    Answer Prompt    ${prompt}    ${input}
+    IF    ${prompt} != ""    Answer Prompt    ${prompt}    ${input}
     Log In
     Open Terminal
     Run Sudo Command In Terminal    sudo echo
@@ -175,6 +175,7 @@ System Reboot
 Check No Match In Output
     [Documentation]    Run a command in terminal and check that the give output isn't present
     [Arguments]    ${cmd}    ${output}
-    Run Simple Command   ${cmd} | grep ${output}
-    Run Command In Terminal    echo $?
+    Run Simple Command    ${cmd} | grep ${output}
+    BuiltIn.Sleep    1
+    Run Simple Command    echo $?
     Match Text    1
