@@ -68,13 +68,14 @@ Regenerate An Existing Recovery Key
     Match Text    Recovery Key:
     Keys Combo    Return
 
-Replace Passphrase With Fail
-    [Documentation]    Fail to replace the default passphrase due incorrect passphrase
-    Run Command With Prompt    sudo snap-tpmctl replace-passphrase
-    Answer Prompt    current passphrase    ${NEW_PASSPHRASE}
-    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
-    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
-    Match Text    passphrase is incorrect
+# NOTE: decomment this after https://github.com/canonical/snapd/pull/16966 is merged in snapd
+# Replace Passphrase With Fail
+#    [Documentation]    Fail to replace the default passphrase due incorrect passphrase
+#    Run Command With Prompt    sudo snap-tpmctl replace-passphrase
+#    Answer Prompt    current passphrase    ${NEW_PASSPHRASE}
+#    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
+#    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
+#    Match Text    passphrase is incorrect
 
 Replace Passphrase
     [Documentation]    Replace the default passphrase
