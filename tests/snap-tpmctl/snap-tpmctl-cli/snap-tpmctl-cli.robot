@@ -32,12 +32,12 @@ Install snap-tpmctl
 Print Status
     [Documentation]    Print TPM/FDE status
     Open Terminal
-    Run Command In Terminal    snap-tpmctl status
+    Run Sudo Command In Terminal    sudo snap-tpmctl status
     Match Text    ACTIVE
 
 List All Recovery Keys
     [Documentation]    List all recovery keys
-    Run Sudo Command In Terminal    sudo snap-tpmctl list-all
+    Run Command In Terminal    snap-tpmctl list-all
     Match Text    default-recovery
     Match Text    passphrase
 
