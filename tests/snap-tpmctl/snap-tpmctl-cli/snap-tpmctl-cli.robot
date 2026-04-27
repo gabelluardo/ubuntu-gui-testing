@@ -8,10 +8,10 @@ Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-wo
 
 
 *** Variables ***
-${Z}    ${CURDIR}
+${Z}                    ${CURDIR}
 
-${NEW_PASSPHRASE}    ubuntu2.
-${PIN}    123451234512345
+${NEW_PASSPHRASE}       ubuntu2.
+${PIN}                  123451234512345
 ${RECOVERY_KEY_NAME}    test-recovery-key
 ${FAKE_RECOVERY_KEY}    11111-22222-33333-44444-55555-12345-23451-34512
 
@@ -28,19 +28,12 @@ Log In
 Install snap-tpmctl
     [Documentation]    Install the snap-tpmctl snap
     Install Snap Package    snap-tpmctl
-    Open Terminal
-    Run Sudo Command In Terminal    sudo snap connect snap-tpmctl:snapd-control
-    Run Command In Terminal    sudo snap connect snap-tpmctl:hardware-observe
-    Run Command In Terminal    sudo snap connect snap-tpmctl:mountctl
-    Run Command In Terminal    sudo snap connect snap-tpmctl:mount-observe
-    Run Command In Terminal    sudo snap connect snap-tpmctl:block-devices
-    Run Command In Terminal    sudo snap connect snap-tpmctl:dm-crypt
 
 Print Status
     [Documentation]    Print TPM/FDE status
     Open Terminal
-    Run Command In Terminal    snap-tpmctl status
-    Match Text    INDETERMINATE
+    Run Sudo Command In Terminal    sudo snap-tpmctl status
+    Match Text    ACTIVE
 
 List All Recovery Keys
     [Documentation]    List all recovery keys
@@ -52,17 +45,17 @@ Check Recovery Key
     [Documentation]    Check existing recovery key
     Run Command With Prompt    sudo snap-tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${RECOVERY_KEY}
-    Match Text    recovery key works
+    Match Text    Recovery key works
 
 Check Recovery Key With Fail
     [Documentation]    Check existing recovery key
     Run Command With Prompt    sudo snap-tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${FAKE_RECOVERY_KEY}
-    Match Text    recovery key doesn't work
+    Match Text    Recovery key does not work
 
 Create A New Recovery Key
     [Documentation]    Create a new recovery key
-    Run Command In Terminal    sudo snap-tpmctl create-recovery-key ${RECOVERY_KEY_NAME}
+    Run Simple Command    sudo snap-tpmctl create-recovery-key ${RECOVERY_KEY_NAME}
     Match Text    Recovery Key:
     Keys Combo    Return
     Run Command In Terminal    snap-tpmctl list-recovery-keys
@@ -71,17 +64,18 @@ Create A New Recovery Key
 
 Regenerate An Existing Recovery Key
     [Documentation]    Regenerate a recovery key
-    Run Command In Terminal    sudo snap-tpmctl regenerate-recovery-key ${RECOVERY_KEY_NAME}
+    Run Simple Command    sudo snap-tpmctl regenerate-recovery-key ${RECOVERY_KEY_NAME}
     Match Text    Recovery Key:
     Keys Combo    Return
 
-Replace Passphrase With Fail
-    [Documentation]    Fail to replace the default passphrase due incorrect passphrase
-    Run Command With Prompt    sudo snap-tpmctl replace-passphrase
-    Answer Prompt    current passphrase    ${NEW_PASSPHRASE}
-    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
-    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
-    Match Text    passphrase is incorrect
+# NOTE: decomment this after https://github.com/canonical/snapd/pull/16966 is merged in snapd
+# Replace Passphrase With Fail
+#    [Documentation]    Fail to replace the default passphrase due incorrect passphrase
+#    Run Command With Prompt    sudo snap-tpmctl replace-passphrase
+#    Answer Prompt    current passphrase    ${NEW_PASSPHRASE}
+#    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
+#    Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
+#    Match Text    passphrase is incorrect
 
 Replace Passphrase
     [Documentation]    Replace the default passphrase
