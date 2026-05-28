@@ -1,0 +1,7 @@
+<volume type='file'>
+  <name>{name}</name>
+  <capacity unit='GiB'>25</capacity>
+  <target>
+    <format type='qcow2'/>
+  </target>
+</volume>

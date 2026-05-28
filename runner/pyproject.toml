@@ -1,24 +1,44 @@
 [project]
 name = "ubuntu-gui-testing-runner"
 version = "0.1.0"
-description = "QEMU + YARF runner utilities for ubuntu-gui-testing"
+description = "Test runner for Ubuntu GUI testing using libvirt-managed virtual machines"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "paramiko>=3.5.0",
-]
-
-[dependency-groups]
-dev = [
-  "mypy>=1.11.0",
-  "pytest>=8.3.0",
-  "pytest-mock>=3.14.0",
-  "ruff>=0.9.0",
-  "types-paramiko>=3.5.0.20240928",
+  "asyncio>=4.0.0",
+  "defusedxml>=0.7.1",
+  "libvirt-python>=12.3.0",
+  "paramiko>=5.0.0",
 ]
 
 [project.scripts]
 ubuntu-gui-testing-runner = "ubuntu_gui_testing_runner.__main__:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=2.1.0",
+  "pytest>=9.0.3",
+  "pytest-mock>=3.15.1",
+  "ruff>=0.15.15",
+  "types-defusedxml>=0.7.0.20260504",
+  "types-paramiko>=4.0.0.20260518",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+warn_unused_configs = true
+namespace_packages = true
+explicit_package_bases = true
+
+[tool.pytest]
+pythonpath = ["."]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 88
@@ -29,15 +49,3 @@ select = ["E", "F", "I", "B", "UP", "S", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["S101", "S105", "S106", "S108"]
-
-[tool.mypy]
-python_version = "3.12"
-strict = true
-warn_unreachable = true
-warn_unused_configs = true
-namespace_packages = true
-explicit_package_bases = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]

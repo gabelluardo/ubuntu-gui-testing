@@ -1,0 +1,11 @@
+<volume type='file'>
+  <name>{name}</name>
+  <capacity unit='bytes'>0</capacity>
+  <target>
+    <format type='qcow2'/>
+  </target>
+  <backingStore>
+    <path>{backing_image}</path>
+    <format type='qcow2'/>
+  </backingStore>
+</volume>
