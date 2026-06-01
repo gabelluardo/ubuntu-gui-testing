@@ -22,3 +22,22 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: mypy-runner
+        name: mypy (runner)
+        entry: uv run --directory runner mypy .
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: ruff-format-runner
+        name: ruff format (runner)
+        entry: uv run --directory runner ruff format --check
+          ubuntu_gui_testing_runner
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: ruff-check-runner
+        name: ruff check (runner)
+        entry: uv run --directory runner ruff check
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
