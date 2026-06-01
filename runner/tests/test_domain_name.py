@@ -16,8 +16,8 @@ class _FakeRunner(_BaseLibvirtRunner):
 
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
-    ) -> None:
-        pass
+    ) -> int:
+        return 0
 
 
 def _make_conn_with_existing_domains(names: list[str]) -> MagicMock:

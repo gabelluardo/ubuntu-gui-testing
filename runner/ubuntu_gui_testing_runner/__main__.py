@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 
 from ubuntu_gui_testing_runner.cli import parse_args
@@ -45,10 +46,12 @@ def main() -> None:
         )
 
     with runner_ctx as runner:
-        runner.run(
+        returncode = runner.run(
             suite=args.suite,
             test=args.test,
         )
+
+    sys.exit(returncode)
 
 
 if __name__ == "__main__":

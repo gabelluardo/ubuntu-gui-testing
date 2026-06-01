@@ -112,7 +112,7 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
 
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
-    ) -> None:
+    ) -> int:
         """Run YARF across the install-then-reboot lifecycle.
 
         The installer runs inside the transient domain (phase 1).  When it
@@ -138,12 +138,13 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
                     code = yarf_task.result()
                     LOGGER.info("YARF process exited during install with code %s", code)
                     reboot_task.cancel()
-                    return
+                    return code
 
                 # Reboot detected — domain restarted from disk; wait for
                 # YARF to finish the post-install test suite.
                 returncode = await yarf_task
                 LOGGER.info("YARF process exited after reboot with code %s", returncode)
+                return returncode
         finally:
             if yarf_process.returncode is None:
                 LOGGER.info("Terminating YARF process")

@@ -155,11 +155,12 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
 
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
-    ) -> None:
+    ) -> int:
         yarf_process = await self._spawn_yarf(suite, test, vsock_cid, vnc_port)
         try:
             returncode = await yarf_process.wait()
             LOGGER.info("YARF process exited with code %s", returncode)
+            return returncode
         finally:
             if yarf_process.returncode is None:
                 LOGGER.info("Terminating YARF process")

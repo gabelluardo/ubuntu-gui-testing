@@ -16,8 +16,8 @@ class _FakeRunner(_BaseLibvirtRunner):
 
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
-    ) -> None:
-        pass
+    ) -> int:
+        return 0
 
 
 def test_yarf_command_includes_suite_and_test() -> None:

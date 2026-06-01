@@ -153,7 +153,7 @@ class _BaseLibvirtRunner(Runner):
         self._pool = None
         self._conn = None
 
-    async def _run(self, suite: str, test: str) -> None:
+    async def _run(self, suite: str, test: str) -> int:
         """Start the domain and log key runtime connectivity properties."""
         LOGGER.info("Starting suite '%s' test '%s'", suite, test)
         if self.domain.isActive() == 0:
@@ -171,16 +171,16 @@ class _BaseLibvirtRunner(Runner):
             raise RuntimeError("VSOCK CID information is not available in domain XML")
         LOGGER.info("VSOCK CID: %s", vsock_cid)
 
-        await self._run_yarf(suite, test, vsock_cid, vnc_port)
+        return await self._run_yarf(suite, test, vsock_cid, vnc_port)
 
     @abstractmethod
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
-    ) -> None:
+    ) -> int:
         """Run the yarf process. Subclasses implement specific lifecycle."""
 
-    def run(self, suite: str, test: str) -> None:
-        asyncio.run(self._run(suite, test))
+    def run(self, suite: str, test: str) -> int:
+        return asyncio.run(self._run(suite, test))
 
     def _generate_domain_name(self, suite_name: str, test_name: str) -> str:
         base = f"ugt-{suite_name}-{test_name}-{date.today().isoformat()}"
