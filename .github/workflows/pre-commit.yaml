@@ -16,4 +16,5 @@ jobs:
       - name: pre-commit
         run: |
           sudo apt install -y pre-commit git
+          sudo apt install python3-libvirt libvirt-dev libpython3-dev
           pre-commit run --all-files
