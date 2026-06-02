@@ -12,7 +12,7 @@ Boot a VM from an ISO and run the test suite:
 ubuntu-gui-testing-runner \
   --suite tests/desktop-installer \
   --test resolute.entire-disk \
-  --iso ~/images/ubuntu-25.04-desktop-amd64.iso
+  --iso ~/images/ubuntu-26.04-desktop-amd64.iso
 ```
 
 ### From an existing domain
