@@ -76,3 +76,21 @@ def test_yarf_sets_vnc_port_env_variable() -> None:
 
     # VNC port is offset by 5900 (5902 - 5900 = 2)
     assert captured_env["VNC_PORT"] == "2"
+
+
+def test_yarf_command_uses_configured_artifacts_dir() -> None:
+    captured_cmd: list[str] = []
+
+    async def fake_exec(*args: str, **kwargs: Any) -> AsyncMock:
+        captured_cmd.extend(args)
+        return AsyncMock()
+
+    with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
+        runner = _FakeRunner.__new__(_FakeRunner)
+        runner.artifacts_path = Path("/custom/output")
+        asyncio.run(
+            runner._spawn_yarf(suite="suite", test="test", vsock_cid=3, vnc_port=5901)
+        )
+
+    outdir_idx = captured_cmd.index("--outdir")
+    assert captured_cmd[outdir_idx + 1] == "/custom/output"

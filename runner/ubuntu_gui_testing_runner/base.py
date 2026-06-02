@@ -235,7 +235,7 @@ class _BaseLibvirtRunner(Runner):
             "--platform=Vnc",
             suite,
             "--outdir",
-            "./artifacts",
+            str(self.artifacts_path),
             "--",
             "--variable",
             f"CID:{vsock_cid}",
