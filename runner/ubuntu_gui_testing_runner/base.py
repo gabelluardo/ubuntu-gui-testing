@@ -165,6 +165,8 @@ class _BaseLibvirtRunner(Runner):
         LOGGER.info("Domain '%s' started", self.domain_name)
         if vnc_port is None:
             raise RuntimeError("VNC port information is not available in domain XML")
+        if vnc_port < 5900:
+            raise RuntimeError(f"VNC port {vnc_port} is below 5900")
         LOGGER.info("VNC port: %s", vnc_port)
 
         if vsock_cid is None:
