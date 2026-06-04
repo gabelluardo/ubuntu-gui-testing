@@ -1,29 +1,30 @@
 from __future__ import annotations
 
-import argparse
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 
 @pytest.fixture
-def runner_args(tmp_path: Path) -> argparse.Namespace:
-    iso_path = tmp_path / "ubuntu.iso"
-    iso_path.touch()
+def templates_dir() -> Path:
+    return Path(__file__).resolve().parent.parent / "templates"
 
-    return argparse.Namespace(
-        test_suite="tests/desktop-installer/",
-        cleanup_storage=False,
-        tpm=False,
-        iso=str(iso_path),
-        qemu_args_json=str(tmp_path / "qemu-args.json"),
-        memory="4096M",
-        cores="2",
-        storage_prefix=None,
-        image_disk_size="20G",
-        archive_dir=None,
-        suite=None,
-        disk_path=None,
-        test_username="ubuntu",
-        test_password="ubuntu",
-    )
+
+@pytest.fixture
+def mock_libvirt_connection() -> MagicMock:
+    """A mock libvirt connection with sensible defaults."""
+    conn = MagicMock()
+    conn.lookupByName.side_effect = Exception("domain not found")
+    return conn
+
+
+@pytest.fixture
+def mock_libvirt_open(
+    mock_libvirt_connection: MagicMock,
+) -> Generator[Any, None, None]:
+    """Patch libvirt.open to return the mock connection."""
+    with patch("libvirt.open", return_value=mock_libvirt_connection) as m:
+        yield m

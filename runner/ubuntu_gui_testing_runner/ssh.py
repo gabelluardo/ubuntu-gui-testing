@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
+import logging
 import socket
 from pathlib import Path
 from time import monotonic, sleep
 
 import paramiko
 
-from ubuntu_gui_testing_runner.config import ARTIFACTS_DIR, LOGGER
-
 _RECV_READY_TIMEOUT = 30.0  # seconds to wait for sudo output before giving up
+
+LOGGER = logging.getLogger(__name__)
 
 
 def collect_installer_logs(
-    guest_cid: int, test_username: str, test_password: str
+    guest_cid: int,
+    test_username: str,
+    test_password: str,
+    artifacts_dir: Path,
 ) -> None:
     """Copy installer and journal logs to the artifacts directory."""
 
@@ -46,7 +50,7 @@ def collect_installer_logs(
                 file_handle.write(session.recv(0xFFFF))
         session.close()
 
-    ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     sock: socket.socket | None = None
     try:
@@ -62,12 +66,12 @@ def collect_installer_logs(
             save_remote_sudo_cmd_output(
                 transport,
                 "tar cz -C /var/log/installer .",
-                ARTIFACTS_DIR / "installer_logs.tar.gz",
+                artifacts_dir / "installer_logs.tar.gz",
             )
             save_remote_sudo_cmd_output(
                 transport,
                 "sh -c 'journalctl --no-pager|gzip'",
-                ARTIFACTS_DIR / "journal.gz",
+                artifacts_dir / "journal.gz",
             )
         finally:
             transport.close()

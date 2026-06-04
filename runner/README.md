@@ -1,48 +1,64 @@
-# Runner
+# Ubuntu GUI Testing Runner
 
-This directory contains the QEMU + YARF runner used to spawn a VM and execute a Robot Framework test suite over VNC.
+Test runner that manages libvirt virtual machines for GUI test execution using [YARF](https://github.com/canonical/yarf).
 
-## Prerequisites
+## Usage
 
-- Python 3.12+
-- `uv`
-- `qemu-system-$(uname -m)`
-- `qemu-img`
-- `yarf`
-- Optional (only when using `--tpm`): `swtpm`
+### From an ISO
 
-## Install
+Boot a VM from an ISO and run the test suite:
 
-From this directory (`runner/`):
+```bash
+ubuntu-gui-testing-runner \
+  --suite tests/desktop-installer \
+  --test resolute.entire-disk \
+  --iso ~/images/ubuntu-26.04-desktop-amd64.iso
+```
+
+### From an existing domain
+
+Clone an existing libvirt domain (using a qcow2 overlay) and run the test suite against it:
+
+```bash
+ubuntu-gui-testing-runner \
+  --suite tests/firefox-example \
+  --test firefox-example-basic \
+  --source-domain ugt-desktop-installer-resolute.entire-disk-2026-06-01
+```
+
+### Options
+
+| Flag | Description |
+| - | - |
+| `--suite` | Path to the test suite (required) |
+| `--test` | Name of the test to run (required) |
+| `--iso` | Path to an ISO for installation |
+| `--source-domain` | Existing libvirt domain to clone from |
+| `--keep` | Keep the VM and resources after the run |
+| `--connection-uri` | Libvirt connection URI (default: `qemu:///session`) |
+| `--pool-name` | Storage pool name (default: `ubuntu-gui-testing`) |
+| `--pool-dir` | Storage pool directory (default: `/pool`) |
+| `--artifacts-dir` | Directory for test artifacts (default: `./artifacts`) |
+| `--swtpm-state-dir` | Path to swtpm state (default: `~/.config/libvirt/qemu/swtpm`) |
+| `--test-username` | Guest SSH username (default: `ubuntu`) |
+| `--test-password` | Guest SSH password (default: `ubuntu`) |
+| `--domain-template` | Override domain XML template |
+| `--pool-template` | Override pool XML template |
+| `--volume-template` | Override volume XML template |
+| `--overlay-template` | Override overlay volume XML template |
+
+Either `--iso` or `--source-domain` must be provided.
+
+## Development
+
+Requires Python ≥ 3.12 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 cd runner
 uv sync --group dev
 ```
 
-## Run
-
-Run via console script:
-
-```bash
-uv run ubuntu-gui-testing-runner \
-  --iso /path/to/ubuntu.iso \
-  --test-suite tests/desktop-installer/ \
-  --suite resolute.entire-disk
-```
-
-### Common options
-
-- `--suite`: Run one Robot suite name.
-- `--tpm`: Enable software TPM emulation.
-- `--cleanup-storage`: Remove created VM disk after run.
-- `--disk-path`: Reuse or place VM disk at a specific `.qcow2` path.
-- `--archive-dir`: Copy run artifacts (disk, OVMF vars, logs, TPM state) to a directory.
-- `--qemu-args-json`: Override QEMU argument template (defaults to `runner/qemu-args.json`).
-
-## Quality checks
-
-Run from `runner/`:
+### Quality checks
 
 ```bash
 uv run ruff format .

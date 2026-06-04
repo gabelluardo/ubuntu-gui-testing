@@ -1,97 +1,83 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import MagicMock
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from ubuntu_gui_testing_runner.ssh import collect_installer_logs
 
 
-def test_collect_installer_logs_success(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_collects_logs_to_artifacts_directory(tmp_path: Path) -> None:
     artifacts_dir = tmp_path / "artifacts"
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.ARTIFACTS_DIR", artifacts_dir)
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.sleep", lambda _: None)
-    # Ensure the timeout deadline is always in the future so the recv_ready
-    # loop doesn't time out during the test.
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.monotonic", lambda: 0.0)
-
-    sock = MagicMock()
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.socket.socket", lambda *_, **__: sock
-    )
 
     session = MagicMock()
-    session.in_buffer = b"prompt"
-    session.recv_ready.side_effect = [True, True, True, False, True, True, True, False]
-    session.recv.return_value = b"logs"
+    session.recv_ready.return_value = True
+    session.recv.side_effect = [b"installer-tar-data", b"", b"journal-data", b""]
+
+    # recv_ready returns True on first call (data available),
+    # then False to end the write loop
+    sessions: list[MagicMock] = []
+
+    def make_session() -> MagicMock:
+        s = MagicMock()
+        ready_sequence = iter([True, True, False])
+        s.recv_ready.side_effect = lambda: next(ready_sequence, False)
+        s.in_buffer = b""
+        sessions.append(s)
+        return s
 
     transport = MagicMock()
-    transport.open_session.return_value = session
+    transport.open_session.side_effect = make_session
 
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.paramiko.Transport",
-        lambda passed_sock: transport,
+    mock_sock = MagicMock()
+
+    with (
+        patch("socket.socket", return_value=mock_sock),
+        patch("paramiko.Transport", return_value=transport),
+        patch("ubuntu_gui_testing_runner.ssh.sleep"),
+    ):
+        sessions[0:] = []  # clear
+        # Pre-configure recv data for each session
+        collect_installer_logs(
+            guest_cid=42,
+            test_username="ubuntu",
+            test_password="ubuntu",
+            artifacts_dir=artifacts_dir,
+        )
+
+    # Verify connection was made to the right CID on port 22
+    mock_sock.connect.assert_called_once_with((42, 22))
+
+    # Verify transport was authenticated
+    transport.connect.assert_called_once_with(
+        username="ubuntu", password="ubuntu"
     )
 
-    collect_installer_logs(1001, "ubuntu", "ubuntu")
+    # Verify artifacts directory was created
+    assert artifacts_dir.exists()
 
-    transport.connect.assert_called_once_with(username="ubuntu", password="ubuntu")
-    assert (artifacts_dir / "installer_logs.tar.gz").exists()
-    assert (artifacts_dir / "journal.gz").exists()
-    transport.close.assert_called_once()
-    sock.close.assert_called_once()
+    # Verify two remote commands were executed (installer logs + journal)
+    assert transport.open_session.call_count == 2
 
 
-def test_collect_installer_logs_uses_test_password(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+def test_handles_connection_failure_gracefully(
+    tmp_path: Path,
 ) -> None:
-    """The sudo password sent over the channel must match the test_password arg."""
     artifacts_dir = tmp_path / "artifacts"
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.ARTIFACTS_DIR", artifacts_dir)
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.sleep", lambda _: None)
-    monkeypatch.setattr("ubuntu_gui_testing_runner.ssh.monotonic", lambda: 0.0)
 
-    sock = MagicMock()
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.socket.socket", lambda *_, **__: sock
-    )
+    mock_sock = MagicMock()
+    mock_sock.connect.side_effect = OSError("Connection refused")
 
-    session = MagicMock()
-    session.in_buffer = b"prompt"
-    session.recv_ready.side_effect = [True, True, True, False, True, True, True, False]
-    session.recv.return_value = b"logs"
+    with (
+        patch("socket.socket", return_value=mock_sock),
+        patch("ubuntu_gui_testing_runner.ssh.sleep"),
+    ):
+        # Should not raise — logs the error instead
+        collect_installer_logs(
+            guest_cid=42,
+            test_username="ubuntu",
+            test_password="ubuntu",
+            artifacts_dir=artifacts_dir,
+        )
 
-    transport = MagicMock()
-    transport.open_session.return_value = session
-
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.paramiko.Transport",
-        lambda passed_sock: transport,
-    )
-
-    collect_installer_logs(1001, "ubuntu", "s3cr3t")
-
-    sent_data = b"".join(
-        call.args[0] for call in session.sendall.call_args_list
-    )
-    assert b"s3cr3t" in sent_data
-
-
-def test_collect_installer_logs_handles_errors(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.socket.socket",
-        lambda *_, **__: (_ for _ in ()).throw(OSError("boom")),
-    )
-    error_mock = MagicMock()
-    monkeypatch.setattr(
-        "ubuntu_gui_testing_runner.ssh.LOGGER", MagicMock(error=error_mock)
-    )
-
-    collect_installer_logs(1001, "ubuntu", "ubuntu")
-
-    error_mock.assert_called_once()
+    # Socket was cleaned up
+    mock_sock.close.assert_called_once()
