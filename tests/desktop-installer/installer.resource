@@ -356,13 +356,8 @@ Entire Disk With ZFS
 Restart Stream And Wait For Login
     [Documentation]         Restart stream and wait for the login screen
     [Arguments]     ${template}=generic
-    FOR    ${_}    IN RANGE    120
-        Restart Video Input
-        ${match}                Run Keyword And Return Status
-        ...                     Match       ${T}/${template}/login-prompt.png       15
-        IF    ${match}    BREAK
-    END
-    IF    not ${match}    Fail    No match found
+    Restart Video Input
+    Match    ${T}/${template}/login-prompt.png    15
 
 Wait For Reboot To Finish
     [Documentation]    Login Prompt
@@ -371,7 +366,7 @@ Wait For Reboot To Finish
     Match Text       Please remove        120
     Keys Combo    ${combo}
 
-    Restart Stream And Wait For Login  template=${template}
+    Wait Until Keyword Succeeds    1800 sec   1    Restart Stream And Wait For Login    ${template}
     Move Pointer To ${T}/${template}/login-prompt.png
     EzClick
 
