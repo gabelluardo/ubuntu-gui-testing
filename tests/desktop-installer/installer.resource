@@ -366,7 +366,7 @@ Wait For Reboot To Finish
     Match Text       Please remove        120
     Keys Combo    ${combo}
 
-    Wait Until Keyword Succeeds    1800 sec   1    Restart Stream And Wait For Login    ${template}
+    Wait Until Keyword Succeeds    1800 sec    1 sec    Restart Stream And Wait For Login    ${template}
     Move Pointer To ${T}/${template}/login-prompt.png
     EzClick
 
