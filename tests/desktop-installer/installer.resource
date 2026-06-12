@@ -354,7 +354,7 @@ Entire Disk With ZFS
     EzClick
 
 Restart Stream And Wait For Login
-    [Documentation]         Restart stream and wait for the login screen
+    [Documentation]         Restart stream and check for the login screen (single attempt; use Wait Until Keyword Succeeds to retry)
     [Arguments]     ${template}=generic
     Restart Video Input
     Match    ${T}/${template}/login-prompt.png    15
