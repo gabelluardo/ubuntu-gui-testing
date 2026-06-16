@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from ubuntu_gui_testing_runner.cli import parse_args
-from ubuntu_gui_testing_runner.defaults import (
+from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CONNECTION_URI,
     DEFAULT_POOL_NAME,

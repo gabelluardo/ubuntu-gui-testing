@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from textwrap import dedent
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import libvirt  # type: ignore[import-untyped]
 import pytest
@@ -54,6 +55,50 @@ SOURCE_DOMAIN_XML_NO_NVRAM = dedent("""\
         </disk>
       </devices>
     </domain>
+""")
+
+SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY = dedent("""\
+        <domain type="kvm">
+            <name>source</name>
+            <uuid>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</uuid>
+            <metadata>
+                <ugt:ugt xmlns:ugt="https://canonical.com/ubuntu-gui-testing">
+                    <ugt:recovery-key>12345-67890-11111-22222-33333-44444-55555-66666</ugt:recovery-key>
+                </ugt:ugt>
+            </metadata>
+            <os firmware="efi">
+                <type arch="x86_64" machine="q35">hvm</type>
+                <nvram>/pool/source-VARS.fd</nvram>
+            </os>
+            <devices>
+                <disk type="file" device="disk">
+                    <source file="/pool/source.qcow2"/>
+                    <target dev="vda" bus="virtio"/>
+                </disk>
+            </devices>
+        </domain>
+""")
+
+SOURCE_DOMAIN_XML_WITH_EMPTY_RECOVERY_KEY = dedent("""\
+        <domain type="kvm">
+            <name>source</name>
+            <uuid>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</uuid>
+            <metadata>
+                <ugt:ugt xmlns:ugt="https://canonical.com/ubuntu-gui-testing">
+                    <ugt:recovery-key>   </ugt:recovery-key>
+                </ugt:ugt>
+            </metadata>
+            <os firmware="efi">
+                <type arch="x86_64" machine="q35">hvm</type>
+                <nvram>/pool/source-VARS.fd</nvram>
+            </os>
+            <devices>
+                <disk type="file" device="disk">
+                    <source file="/pool/source.qcow2"/>
+                    <target dev="vda" bus="virtio"/>
+                </disk>
+            </devices>
+        </domain>
 """)
 
 
@@ -227,5 +272,134 @@ def test_skips_tpm_copy_when_source_has_no_tpm_state(tmp_path: Path) -> None:
             # Should not raise; TPM copy is simply skipped
             dest_tpm_dir = swtpm_dir / "11111111-2222-3333-4444-555555555555"
             assert not dest_tpm_dir.exists()
+        finally:
+            runner.close()
+
+
+def test_extracts_recovery_key_from_source_metadata(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            assert (
+                runner.recovery_key == "12345-67890-11111-22222-33333-44444-55555-66666"
+            )
+        finally:
+            runner.close()
+
+
+def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            mock_process = AsyncMock()
+            mock_process.wait = AsyncMock(return_value=0)
+            mock_process.returncode = 0
+            with patch.object(
+                runner, "_spawn_yarf", return_value=mock_process
+            ) as spawn:
+                asyncio.run(runner._run_yarf("suite", "test", 3, 5901))
+
+            spawn.assert_called_once_with(
+                "suite",
+                "test",
+                5901,
+                robot_variables={
+                    "CID": "3",
+                    "RECOVERY_KEY": "12345-67890-11111-22222-33333-44444-55555-66666",
+                },
+            )
+        finally:
+            runner.close()
+
+
+def test_logs_when_recovery_key_metadata_missing(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML.replace("/pool/source-VARS.fd", str(nvram_source))
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn), caplog.at_level("INFO"):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            assert runner.recovery_key is None
+            assert (
+                "No metadata block found in source domain 'source' XML" in caplog.text
+            )
+        finally:
+            runner.close()
+
+
+def test_logs_when_recovery_key_metadata_empty(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_EMPTY_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn), caplog.at_level("WARNING"):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            assert runner.recovery_key is None
+            assert (
+                "Recovery key metadata in source domain 'source' is empty"
+                in caplog.text
+            )
         finally:
             runner.close()

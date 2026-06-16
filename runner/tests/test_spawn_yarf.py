@@ -32,7 +32,10 @@ def test_yarf_command_includes_suite_and_test() -> None:
         runner.artifacts_path = Path("/artifacts")
         asyncio.run(
             runner._spawn_yarf(
-                suite="my-suite", test="my-test", vsock_cid=3, vnc_port=5902
+                suite="my-suite",
+                test="my-test",
+                vnc_port=5902,
+                robot_variables={"CID": "3"},
             )
         )
 
@@ -52,10 +55,42 @@ def test_yarf_command_passes_vsock_cid_as_variable() -> None:
         runner = _FakeRunner.__new__(_FakeRunner)
         runner.artifacts_path = Path("/artifacts")
         asyncio.run(
-            runner._spawn_yarf(suite="suite", test="test", vsock_cid=99, vnc_port=5901)
+            runner._spawn_yarf(
+                suite="suite",
+                test="test",
+                vnc_port=5901,
+                robot_variables={"CID": "99"},
+            )
         )
 
     assert "CID:99" in captured_cmd
+
+
+def test_yarf_command_passes_extra_variables() -> None:
+    captured_cmd: list[str] = []
+
+    async def fake_exec(*args: str, **kwargs: Any) -> AsyncMock:
+        captured_cmd.extend(args)
+        return AsyncMock()
+
+    with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
+        runner = _FakeRunner.__new__(_FakeRunner)
+        runner.artifacts_path = Path("/artifacts")
+        asyncio.run(
+            runner._spawn_yarf(
+                suite="suite",
+                test="test",
+                vnc_port=5901,
+                robot_variables={
+                    "CID": "99",
+                    "RECOVERY_KEY": "12345-67890-11111-22222-33333-44444-55555-66666",
+                },
+            )
+        )
+
+    assert (
+        "RECOVERY_KEY:12345-67890-11111-22222-33333-44444-55555-66666" in captured_cmd
+    )
 
 
 def test_yarf_sets_vnc_port_env_variable() -> None:
@@ -71,7 +106,12 @@ def test_yarf_sets_vnc_port_env_variable() -> None:
         runner = _FakeRunner.__new__(_FakeRunner)
         runner.artifacts_path = Path("/artifacts")
         asyncio.run(
-            runner._spawn_yarf(suite="suite", test="test", vsock_cid=3, vnc_port=5902)
+            runner._spawn_yarf(
+                suite="suite",
+                test="test",
+                vnc_port=5902,
+                robot_variables={"CID": "3"},
+            )
         )
 
     # VNC port is offset by 5900 (5902 - 5900 = 2)
@@ -89,7 +129,12 @@ def test_yarf_command_uses_configured_artifacts_dir() -> None:
         runner = _FakeRunner.__new__(_FakeRunner)
         runner.artifacts_path = Path("/custom/output")
         asyncio.run(
-            runner._spawn_yarf(suite="suite", test="test", vsock_cid=3, vnc_port=5901)
+            runner._spawn_yarf(
+                suite="suite",
+                test="test",
+                vnc_port=5901,
+                robot_variables={"CID": "3"},
+            )
         )
 
     outdir_idx = captured_cmd.index("--outdir")
