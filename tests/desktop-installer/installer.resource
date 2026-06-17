@@ -640,8 +640,11 @@ Disable Secure Boot
 
 TPM Action Enable Secure Boot Manually
     [Documentation]     Enable Secure Boot Manually when prompted on the TPM action page
-    Move Pointer To "Enable secure boot manually"
-    EzClick
+    ${expanded}    Run Keyword And Return Status    Match Text    Restart to firmware settings    10
+    IF    not ${expanded}
+        Move Pointer To "Enable secure boot manually"
+        EzClick
+    END
     Move Pointer To "Restart to firmware settings"
     EzClick
     Match Text  Device Manager  180
