@@ -48,9 +48,7 @@ def test_collects_logs_to_artifacts_directory(tmp_path: Path) -> None:
     mock_sock.connect.assert_called_once_with((42, 22))
 
     # Verify transport was authenticated
-    transport.connect.assert_called_once_with(
-        username="ubuntu", password="ubuntu"
-    )
+    transport.connect.assert_called_once_with(username="ubuntu", password="ubuntu")
 
     # Verify artifacts directory was created
     assert artifacts_dir.exists()

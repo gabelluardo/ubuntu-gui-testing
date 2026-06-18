@@ -280,6 +280,7 @@ def _make_runner_for_lifecycle(tmp_path: Path) -> LibvirtIsoRunner:
             suite_name="test",
             test_name="basic",
             pool_dir=tmp_path,
+            artifacts_dir=tmp_path / "artifacts",
         )
 
 
@@ -385,5 +386,43 @@ def test_run_yarf_terminates_process_if_still_running(
             asyncio.run(runner._run_yarf("suite", "test", 3, 5900))
 
         mock_process.terminate.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_store_recovery_key_as_metadata(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    try:
+        runner.artifacts_path.mkdir(parents=True, exist_ok=True)
+        recovery_key_path = runner.artifacts_path / "recovery-key.txt"
+        recovery_key_path.write_text(
+            "12345-67890-11111-22222-33333-44444-55555-66666\n", encoding="utf-8"
+        )
+        set_metadata_mock = MagicMock()
+        runner.domain.setMetadata = set_metadata_mock
+
+        runner._store_recovery_key_as_metadata()
+
+        set_metadata_mock.assert_called_once_with(
+            libvirt.VIR_DOMAIN_METADATA_ELEMENT,
+            "<ugt><recovery-key>12345-67890-11111-22222-33333-44444-55555-66666</recovery-key></ugt>",
+            "ugt",
+            "https://canonical.com/ubuntu-gui-testing",
+            libvirt.VIR_DOMAIN_AFFECT_CONFIG,
+        )
+    finally:
+        runner.close()
+
+
+def test_store_recovery_key_as_metadata_no_file(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    try:
+        runner.artifacts_path.mkdir(parents=True, exist_ok=True)
+        set_metadata_mock = MagicMock()
+        runner.domain.setMetadata = set_metadata_mock
+
+        runner._store_recovery_key_as_metadata()
+
+        set_metadata_mock.assert_not_called()
     finally:
         runner.close()

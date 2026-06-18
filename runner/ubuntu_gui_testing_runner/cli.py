@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from ubuntu_gui_testing_runner.defaults import (
+from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CONNECTION_URI,
     DEFAULT_OVERLAY_TEMPLATE,

@@ -16,3 +16,9 @@ DEFAULT_OVERLAY_TEMPLATE = _TEMPLATE_DIR / "overlay_template.xml"
 DEFAULT_SWTPM_STATE_DIR = Path.home() / ".config/libvirt/qemu/swtpm"
 DEFAULT_TEST_USERNAME = "ubuntu"
 DEFAULT_TEST_PASSWORD = "ubuntu"  # noqa: S105
+
+# Domain metadata constants for libvirt XML persistence
+DOMAIN_METADATA_NAMESPACE = "https://canonical.com/ubuntu-gui-testing"
+DOMAIN_METADATA_ROOT = "ugt"
+RECOVERY_KEY_FILENAME = "recovery-key.txt"
+RECOVERY_KEY_METADATA_KEY = "recovery-key"

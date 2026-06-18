@@ -12,10 +12,12 @@ import libvirt  # type: ignore[import-untyped]
 from ubuntu_gui_testing_runner.base import (
     _BaseLibvirtRunner,
 )
-from ubuntu_gui_testing_runner.defaults import (
+from ubuntu_gui_testing_runner.constants import (
     DEFAULT_IMAGE_DOMAIN_TEMPLATE,
     DEFAULT_OVERLAY_TEMPLATE,
     DEFAULT_SWTPM_STATE_DIR,
+    DOMAIN_METADATA_NAMESPACE,
+    RECOVERY_KEY_METADATA_KEY,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -34,6 +36,7 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         **kwargs: Any,
     ) -> None:
         self.source_domain_name = source_domain
+        self.recovery_key: str | None = None
 
         self.overlay_template_path = (
             overlay_template.resolve()
@@ -109,6 +112,37 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         else:
             self.source_tpm_state_dir = None
 
+        metadata = xml.find("metadata")
+        if metadata is None:
+            LOGGER.info(
+                "No metadata block found in source domain '%s' XML",
+                self.source_domain_name,
+            )
+            return
+
+        key_tag = f"{{{DOMAIN_METADATA_NAMESPACE}}}{RECOVERY_KEY_METADATA_KEY}"
+        elem = metadata.find(f".//{key_tag}")
+        if elem is None:
+            LOGGER.info(
+                "No recovery key metadata found in source domain '%s'",
+                self.source_domain_name,
+            )
+            return
+
+        recovery_key = "" if elem.text is None else elem.text.strip()
+        if not recovery_key:
+            LOGGER.warning(
+                "Recovery key metadata in source domain '%s' is empty",
+                self.source_domain_name,
+            )
+            return
+
+        self.recovery_key = recovery_key
+        LOGGER.info(
+            "Loaded recovery key metadata from source domain '%s'",
+            self.source_domain_name,
+        )
+
     def _create_overlay(self) -> None:
         """Create a qcow2 overlay backed by the original image."""
         volume_xml = self._render_template(
@@ -156,7 +190,24 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
     ) -> int:
-        yarf_process = await self._spawn_yarf(suite, test, vsock_cid, vnc_port)
+        robot_variables = {"CID": str(vsock_cid)}
+        if self.recovery_key:
+            robot_variables["RECOVERY_KEY"] = self.recovery_key
+            LOGGER.info(
+                "Starting YARF with recovery key variable for source domain '%s'",
+                self.source_domain_name,
+            )
+        else:
+            LOGGER.info(
+                "Starting YARF without recovery key variable for source domain '%s'",
+                self.source_domain_name,
+            )
+        yarf_process = await self._spawn_yarf(
+            suite,
+            test,
+            vnc_port,
+            robot_variables=robot_variables,
+        )
         try:
             returncode = await yarf_process.wait()
             LOGGER.info("YARF process exited with code %s", returncode)

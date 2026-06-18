@@ -5,17 +5,23 @@ import logging
 from pathlib import Path
 from typing import Any
 from xml.etree.ElementTree import tostring as xml_tostring
+from xml.sax.saxutils import escape
 
 import defusedxml.ElementTree as ET
+import libvirt  # type: ignore[import-untyped]
 
 from ubuntu_gui_testing_runner.base import (
     _BaseLibvirtRunner,
 )
-from ubuntu_gui_testing_runner.defaults import (
+from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ISO_DOMAIN_TEMPLATE,
     DEFAULT_TEST_PASSWORD,
     DEFAULT_TEST_USERNAME,
     DEFAULT_VOLUME_TEMPLATE,
+    DOMAIN_METADATA_NAMESPACE,
+    DOMAIN_METADATA_ROOT,
+    RECOVERY_KEY_FILENAME,
+    RECOVERY_KEY_METADATA_KEY,
 )
 from ubuntu_gui_testing_runner.ssh import collect_installer_logs
 
@@ -124,7 +130,12 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
         If YARF exits before the reboot (e.g. test failure during install),
         we cancel the reboot watcher and return early.
         """
-        yarf_process = await self._spawn_yarf(suite, test, vsock_cid, vnc_port)
+        yarf_process = await self._spawn_yarf(
+            suite,
+            test,
+            vnc_port,
+            robot_variables={"CID": str(vsock_cid)},
+        )
         try:
             async with asyncio.TaskGroup() as tg:
                 yarf_task = tg.create_task(yarf_process.wait())
@@ -155,12 +166,46 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
                     LOGGER.warning("YARF process did not terminate, killing it")
                     yarf_process.kill()
                     await yarf_process.wait()
+            self._store_recovery_key_as_metadata()
             collect_installer_logs(
                 guest_cid=vsock_cid,
                 test_username=self.test_username,
                 test_password=self.test_password,
                 artifacts_dir=self.artifacts_path,
             )
+
+    def _store_recovery_key_as_metadata(self) -> None:
+        """Read recovery key from artifacts and persist it as libvirt metadata."""
+        recovery_key_path = self.artifacts_path / RECOVERY_KEY_FILENAME
+        if not recovery_key_path.exists():
+            LOGGER.info("Recovery key file '%s' not found", recovery_key_path)
+            return
+
+        recovery_key = recovery_key_path.read_text(encoding="utf-8").strip()
+        if not recovery_key:
+            LOGGER.warning("Recovery key file '%s' is empty", recovery_key_path)
+            return
+
+        metadata_xml = (
+            f"<{DOMAIN_METADATA_ROOT}>"
+            f"<{RECOVERY_KEY_METADATA_KEY}>{escape(recovery_key)}</{RECOVERY_KEY_METADATA_KEY}>"
+            f"</{DOMAIN_METADATA_ROOT}>"
+        )
+        try:
+            self.domain.setMetadata(
+                libvirt.VIR_DOMAIN_METADATA_ELEMENT,
+                metadata_xml,
+                DOMAIN_METADATA_ROOT,
+                DOMAIN_METADATA_NAMESPACE,
+                libvirt.VIR_DOMAIN_AFFECT_CONFIG,
+            )
+        except libvirt.libvirtError:
+            LOGGER.exception(
+                "Failed to store recovery key as metadata for domain '%s'",
+                self.domain_name,
+            )
+            return
+        LOGGER.info("Stored recovery key as metadata for domain '%s'", self.domain_name)
 
     async def _handle_reboot(self) -> None:
         """Poll until the transient domain shuts down, then start the persistent one."""

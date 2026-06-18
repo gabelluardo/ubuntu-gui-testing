@@ -10,7 +10,7 @@ from pathlib import Path
 import defusedxml.ElementTree as ET
 import libvirt  # type: ignore[import-untyped]
 
-from ubuntu_gui_testing_runner.defaults import (
+from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CONNECTION_URI,
     DEFAULT_POOL_DIR,
@@ -230,7 +230,11 @@ class _BaseLibvirtRunner(Runner):
         self.pool.refresh(0)
 
     async def _spawn_yarf(
-        self, suite: str, test: str, vsock_cid: int, vnc_port: int
+        self,
+        suite: str,
+        test: str,
+        vnc_port: int,
+        robot_variables: dict[str, str],
     ) -> asyncio.subprocess.Process:
         command = [
             "yarf",
@@ -239,11 +243,10 @@ class _BaseLibvirtRunner(Runner):
             "--outdir",
             str(self.artifacts_path),
             "--",
-            "--variable",
-            f"CID:{vsock_cid}",
-            "--suite",
-            test,
         ]
+        for name, value in robot_variables.items():
+            command.extend(["--variable", f"{name}:{value}"])
+        command.extend(["--suite", test])
         env = os.environ.copy()
         env["VNC_PORT"] = str(vnc_port - 5900)
         process = await asyncio.create_subprocess_exec(*command, env=env)
