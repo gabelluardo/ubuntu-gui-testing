@@ -156,14 +156,19 @@ class _BaseLibvirtRunner(Runner):
         self._pool = None
         self._conn = None
 
-    def _shutdown_domain(self) -> None:
+    def _shutdown_domain(
+        self,
+        timeout: float = GRACEFUL_SHUTDOWN_TIMEOUT,
+        poll_interval: float = GRACEFUL_SHUTDOWN_POLL_INTERVAL,
+    ) -> None:
         """Power off the domain, gracefully first then forcefully on timeout.
 
-        Requests an ACPI shutdown and polls until the domain becomes
-        inactive.  If it does not power off within
-        ``GRACEFUL_SHUTDOWN_TIMEOUT`` seconds, it is forcefully destroyed.
-        Any libvirt error degrades to a forced destroy so teardown can
-        always proceed.
+        Requests an ACPI shutdown and polls every ``poll_interval`` seconds
+        (defaulting to ``GRACEFUL_SHUTDOWN_POLL_INTERVAL``) until the domain
+        becomes inactive.  If it does not power off within ``timeout`` seconds
+        (defaulting to ``GRACEFUL_SHUTDOWN_TIMEOUT``), it is forcefully
+        destroyed.  Any libvirt error degrades to a forced destroy so
+        teardown can always proceed.
         """
         try:
             if self.domain.isActive() != 1:
@@ -182,7 +187,7 @@ class _BaseLibvirtRunner(Runner):
             self._destroy_domain()
             return
 
-        deadline = time.monotonic() + GRACEFUL_SHUTDOWN_TIMEOUT
+        deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             try:
                 if self.domain.isActive() != 1:
@@ -193,12 +198,12 @@ class _BaseLibvirtRunner(Runner):
                     "Failed to query state of domain '%s'", self.domain_name
                 )
                 return
-            time.sleep(GRACEFUL_SHUTDOWN_POLL_INTERVAL)
+            time.sleep(poll_interval)
 
         LOGGER.warning(
             "Domain '%s' did not shut down within %ss, forcing destroy",
             self.domain_name,
-            GRACEFUL_SHUTDOWN_TIMEOUT,
+            timeout,
         )
         self._destroy_domain()
 
