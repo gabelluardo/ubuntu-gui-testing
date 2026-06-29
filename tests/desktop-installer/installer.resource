@@ -217,13 +217,25 @@ Disk Passphrase Setup Questing Onwards
     Move Pointer To ${T}/generic-resolute/next.png
     EzClick
 
+Type String And Ensure Focused
+    [Documentation]    Types a string and verifies it appears on screen. Sometimes the input
+    ...                field is not yet focused when typing starts. If the string is not
+    ...                visible afterwards, press Tab to focus the field and re-type it.
+    [Arguments]    ${string}
+    Type String    ${string}
+    ${visible}    Run Keyword And Return Status    Match Text    ${string}    5
+    IF    not ${visible}
+        Keys Combo    Tab
+        Type String    ${string}
+    END
+
 Create Account
     [Documentation]    Create the user account
     [Arguments]     ${template}=generic
     Match Text  Create your account  20
     ${combo}    Create List    Tab
     BuiltIn.Sleep    2
-    Type String    ubuntu
+    Type String And Ensure Focused    ubuntu
     BuiltIn.Sleep    2
     Keys Combo    ${combo}
     BuiltIn.Sleep    2
